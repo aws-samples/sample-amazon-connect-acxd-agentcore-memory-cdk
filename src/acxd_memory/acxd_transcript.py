@@ -2,8 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 """ACXD ``GetConversation`` messages -> ordered turns + segment watermark (design §3.2-§3.4).
 
-Replaces the AI Agents sample's ``parser.py`` (which parsed AI Agent ``TRANSCRIPT_*`` log
-events). Input is the conversation object the Node fetch step returns: the
+Input is the conversation object the Node fetch step returns: the
 ``amazon-connect-acxd-sdk`` ``GetConversation`` output, projected to the fields used here
 (``conversationId``, ``userId``, ``applicationId``, ``messages[]`` with ``isApplication``, ``text``,
 ``timestamp``, ``isStructured``).
@@ -12,12 +11,11 @@ Mapping rules (design §3.3):
 
 - ``isApplication: false`` -> ``USER``, ``isApplication: true`` -> ``ASSISTANT``.
 - Messages with empty ``text`` and messages with ``isStructured: true`` are not turns
-  (``isStructured`` was never seen in the spike; dropped defensively).
+  (``isStructured`` dropped defensively).
 - Order is the order of ``messages[]``; equal timestamps are tie-broken by list index.
 
 Watermark: epoch milliseconds of the **last** message in the fetched list, whether or not
-that message becomes a turn. The timestamp wire format is a string in the SDK model and was
-not captured in the spike [U, recorded in the build-phase live test], so ``parse_timestamp``
+that message becomes a turn. The timestamp wire format is a string in the SDK model, so ``parse_timestamp``
 accepts ISO 8601 and numeric epoch seconds or milliseconds. A message whose timestamp does
 not parse inherits the previous message's value (index still breaks ties).
 """
@@ -145,9 +143,7 @@ def turns_after(turns: Sequence[Turn], watermark_ms: int | None) -> list[Turn]:
 def to_conversational_payload(turns: Sequence[Turn]) -> list[dict[str, Any]]:
     """Map turns to ``CreateEvent`` ``payload`` entries.
 
-    Same output shape as the AI Agents sample's ``writer.to_conversational_payload``
-    (``{"conversational": {"role", "content": {"text"}}}``); the input type changed from a
-    parsed log ``Turn`` to an ACXD message turn.
+    Output shape: ``{"conversational": {"role", "content": {"text"}}}``.
     """
     payload: list[dict[str, Any]] = []
     for turn in turns:

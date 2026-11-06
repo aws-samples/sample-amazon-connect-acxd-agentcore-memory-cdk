@@ -47,10 +47,10 @@ To change a Python dependency, edit the matching `requirements*.in` file and run
   aws apigateway update-account --patch-operations \
     op=replace,path=/cloudwatchRoleArn,value=arn:aws:iam::<account-id>:role/apigateway-cloudwatch-logs
   ```
-- **An ACXD API key that can create resources.** Provisioning (steps 2 and 5) uses the API
+- **An Agentic CX Designer (ACXD) API key that can create resources.** Provisioning (steps 2 and 5) uses the API
   key of a programmatic user that may create programmatic users and workspace resources.
-  Only an ACXD account administrator can create programmatic users: in the agentic CX
-  designer, **Admin Hub > Programmatic Users > Create Programmatic User**, then select the
+  Only an ACXD account administrator can create programmatic users: in ACXD,
+  **Admin Hub > Programmatic Users > Create Programmatic User**, then select the
   user and **Generate API Key** (the key is shown once). See
   [Getting started with the ACXD SDK](https://docs.aws.amazon.com/connect/latest/devguide/acxd-getting-started.html)
   and [Programmatic users](https://docs.aws.amazon.com/connect/latest/devguide/acxd-programmatic-users.html).
@@ -188,22 +188,13 @@ your inbound flow: a Customer Profiles lookup and the Agentic CX block with
   `nlx_userId`, which gives it no memory.
 - No profile, or more than one: take the block without context variables.
 - Never copy `$.AgenticCX.ContextVariables.acxdmemMemoryContext` into contact attributes.
-- Idle chat timeout: the block parameter is `IdleChatTimeoutSeconds` and must be an
-  integer. A conversation that ends by idle timeout is not written.
+- Idle chat timeout: set it on the block under **Optional settings**. A conversation that
+  ends by idle timeout is not written.
 
 ## 7. Verify
 
 1. **Endpoint security.** `<api-id>` is the first label of the `ReadUrl` host
-   (`https://<api-id>.execute-api...`).
-   ```bash
-   python3 scripts/verify_live_security.py --api-id <api-id>   # add --prefix <resourcePrefix> if you changed it
-   ```
-   Expect `all checks passed`: no Function URLs, permissions scoped to each route and
-   authorizer, one authorizer per route, throttling on, data trace off, TLS 1.2 minimum
-   security policy with `STRICT` endpoint access mode, and 401/403 for a missing, wrong or
-   cross-route secret. The region comes from `AWS_REGION` or the profile (`--region` to
-   override); the endpoint secrets are found through the `<prefix>-api` stack outputs.
-   The script checks the configured policy. To see the handshake itself, use an OpenSSL
+   (`https://<api-id>.execute-api...`). To check the TLS handshake, use an OpenSSL
    3 `s_client` (the macOS `/usr/bin/openssl` is LibreSSL and cannot offer TLS 1.0):
    ```bash
    H=<api-id>.execute-api.$AWS_REGION.amazonaws.com
@@ -214,7 +205,12 @@ your inbound flow: a Customer Profiles lookup and the Agentic CX block with
    ```
    Expect `Cipher is (NONE)` for `tls1` and `tls1_1`, and a negotiated cipher for the other
    two.
-2. **Recall.** With a test Customer Profile, start a conversation, state a preference
+2. **Recall.** Create a test Customer Profile with synthetic data:
+   ```bash
+   aws customer-profiles create-profile --domain-name <profiles-domain> \
+     --first-name Test --last-name Customer --email-address test-1@example.com
+   ```
+   With that profile, start a conversation, state a preference
    ("I always need a vegetarian meal") and end it through the agent (so it reaches Exit
    application). About 4 minutes later, start a second conversation for the same profile
    and ask about it. The writer logs `wrote conversation=...`; the read Lambda returns
@@ -222,38 +218,10 @@ your inbound flow: a Customer Profiles lookup and the Agentic CX block with
 3. **No profile.** A conversation without `nlx_userId` logs `ReadSkipped` and
    `WriteSkipped` and creates no memory.
 4. **Memory does not leave ACXD.** After both branches (Default and Escalation), the
-   contact attributes do not contain the memory text.
-   `e2e/check_contact_memory.py` checks this for a list of contacts.
-
-`e2e/` has the drivers used for the reference run (test Connect flows, chat and voice
-contacts, ACXD logs); [`e2e-verification.md`](e2e-verification.md) has its results. To run
-checks 2 to 4 over chat without a widget (test data only):
-
-```bash
-cd e2e && npm ci --no-audit --no-fund && cd ..   # not part of make install
-# Test flows acxdmem-e2e-inbound and acxdmem-e2e-probe (the probe copies the memory
-# variable into a contact attribute to prove it comes back empty; never ship that).
-python3 e2e/connect_flow.py --instance-id <instance-id> --workspace-id <workspace-id> \
-  --application-id <application-id> --alias <deployment-alias> --apply
-# A test profile the chat flow finds by e-mail; the driver plays the trusted backend.
-aws customer-profiles create-profile --domain-name <profiles-domain> \
-  --first-name Test --last-name Customer --email-address test-1@example.com
-cd e2e
-export ACXDMEM_INSTANCE_ID=<instance-id>
-node chat.mjs --flow <probe-flow-id> --email test-1@example.com \
-  --say "Note for my trips: I always need a vegetarian meal and prefer an aisle seat." \
-  --say "Thanks, that's all, goodbye."
-# about 4 minutes later
-node chat.mjs --flow <probe-flow-id> --email test-1@example.com \
-  --say "I'm booking a flight next month. What seat and meal should I request?" \
-  --say "Perfect, thanks. Bye."
-node chat.mjs --flow <probe-flow-id> --say "Hi, that's all, bye."   # no profile
-cd ..
-```
-
-Each run prints JSON with the contact id, the bot messages and the contact attributes
-(`acxdmemProbeMemory` must be empty). Delete the test flows and the test profile in the
-teardown.
+   contact attributes do not contain the memory text:
+   ```bash
+   aws connect get-contact-attributes --instance-id <instance-id> --initial-contact-id <contact-id>
+   ```
 
 ## Operations
 
@@ -318,9 +286,8 @@ teardown.
 
 1. Remove the Agentic CX block changes from your Connect flows, and the memory nodes from
    your own ACXD flows. Conversations that still call a deleted endpoint follow the
-   failure path and continue without memory. If you used the step 7 drivers, delete the
-   `acxdmem-e2e-*` contact flows (move any phone number off them first) and the test
-   Customer Profiles (`aws customer-profiles delete-profile`).
+   failure path and continue without memory. Delete the test Customer Profiles
+   (`aws customer-profiles delete-profile --domain-name <profiles-domain> --profile-id <profile-id>`).
 2. ACXD assets, then the read-only user:
    ```bash
    cd assets/acxd

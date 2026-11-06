@@ -2,19 +2,17 @@
 # SPDX-License-Identifier: MIT-0
 """Writer stack: work queue + DLQ, writer Lambda (Python), fetch step (Node.js), dedup table.
 
-Design §3.2-§3.4, §9. The AgentCore Memory resource and its execution role are created by
-``scripts/provision_memory.sh``, outside this stack's lifecycle (customer data), as in the
-AI Agents sample. The ACXD API key secret is created manually (``acxdApiKeySecretArn``).
+Design §3.2-§3.4, §8. The AgentCore Memory resource and its execution role are created by
+``scripts/provision_memory.sh``, outside this stack's lifecycle (customer data). The ACXD API key secret is created manually (``acxdApiKeySecretArn``).
 
 Settings fixed by the design (§3.2):
 
 - Work queue: SQS **standard** (per-message ``DelaySeconds`` is not available on FIFO),
-  visibility timeout 180 s (6 x the writer timeout), retention 4 days (SQS default; the
-  design's original 1 h dropped work silently during a writer outage), DLQ after
+  visibility timeout 180 s (6 x the writer timeout), retention 4 days (SQS default), DLQ after
   ``maxReceiveCount`` 3, alarm when the oldest message is older than 30 minutes.
 - Writer Lambda timeout 30 s, batch size 1, concurrency capped with the event-source
   mapping ``maxConcurrency`` (not reserved concurrency, which throttles the poller and
-  burns receive counts). ACXD SDK rate limits are unpublished (spike S0).
+  burns receive counts).
 - The fetch step has no resource policy and no URL: only the writer role may invoke it.
 """
 
@@ -152,7 +150,7 @@ class AcxdmemWriterStack(Stack):
         )
         memory_actions = ["bedrock-agentcore:CreateEvent"]
         if enable_stripping:
-            # Design §4.2 / §9: only when the stripping backstop is on.
+            # Design §4.2 / §8: only when the stripping backstop is on.
             memory_actions.append("bedrock-agentcore:RetrieveMemoryRecords")
         writer_role.add_to_policy(
             iam.PolicyStatement(

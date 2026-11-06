@@ -21,7 +21,6 @@ updates:
     directories:
       - "/lambdas/fetch"
       - "/assets/acxd"
-      - "/e2e"
     schedule:
       interval: weekly
     # Wait a week before proposing a new release (malicious or broken publishes).

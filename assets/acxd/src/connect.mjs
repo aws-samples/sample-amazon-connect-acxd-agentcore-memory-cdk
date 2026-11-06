@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 // Amazon Connect Customer flow snippet: Customer Profiles lookup on the caller's phone number,
-// then the Agentic CX block with nlx_userId = $.Customer.ProfileId (design.md section 5, I2).
+// then the Agentic CX block with nlx_userId = $.Customer.ProfileId (design.md section 5).
 //
 // The snippet is applied by the builder; nothing here calls Connect. renderConnectSnippet()
 // fills the three ACXD placeholders, checkConnectSnippet() enforces the design rules:

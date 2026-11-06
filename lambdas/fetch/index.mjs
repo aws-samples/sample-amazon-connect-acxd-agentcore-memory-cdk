@@ -45,7 +45,7 @@ export function statusOf(err) {
     case 'ResourceNotFoundException':
       return 404;
     case 'ThrottlingException':
-    case 'TooManyRequestsException': // seen live in spike S0 (429), not in the SDK error model
+    case 'TooManyRequestsException': // not in the SDK error model
       return 429;
     case 'ValidationException':
       return 400;

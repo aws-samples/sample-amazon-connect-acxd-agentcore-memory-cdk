@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 """API stack: REST API with one Lambda REQUEST authorizer per route, read + ingest Lambdas.
 
-Design §4, §6, §9. Two routes, called by ACXD data requests over public HTTPS:
+Design §4, §6, §8. Two routes, called by ACXD data requests over public HTTPS:
 
 - ``POST /memory/read``  -> read Lambda (``RetrieveMemoryRecords``), always ``200``.
 - ``POST /memory/write`` -> ingest Lambda (validate, enqueue), ``202``.
@@ -65,11 +65,9 @@ CLIENT_ERROR_RATE = 0.05
 # Header name, not a secret value.
 SECRET_HEADER = "x-acxdmem-secret"  # nosec B105
 AUTHORIZER_CACHE = Duration.seconds(300)
-READ_LAMBDA_TIMEOUT = Duration.seconds(4)  # design §4; ACXD data request default timeout is 5 s
+READ_LAMBDA_TIMEOUT = Duration.seconds(4)  # design §4
 READ_BUDGET_SECONDS = "1.5"  # per namespace, parallel (design §4)
-# Customer-facing path (authorizer + read/ingest) sits inside the 5 s ACXD data request
-# timeout. At 256 MB a double cold start (authorizer + function) took 3.8-4.4 s end to end
-# in the live test (docs/e2e-verification.md, B3); more memory means more CPU for the boto3
+# Customer-facing path (authorizer + read/ingest): more memory means more CPU for the boto3
 # import and TLS setup. The cost difference is negligible at two calls per conversation.
 API_PATH_MEMORY_MB = 1024
 

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 """Shared helpers for the acxdmem stacks.
 
-Pattern carried over from the AI Agents sample's stacks: each Lambda gets its own role and
+Each Lambda gets its own role and
 its own log group, created before the function and passed in through ``log_group``. That
 replaces ``AWSLambdaBasicExecutionRole`` (whose logs statement is ``Resource: *``) and avoids
 the Role -> LogGroup -> Function -> Role dependency cycle.

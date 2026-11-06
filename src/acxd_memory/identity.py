@@ -2,10 +2,8 @@
 # SPDX-License-Identifier: MIT-0
 """Identity rules and AgentCore Memory namespaces (design §3.3, §5).
 
-Ported from the AI Agents sample (``connect_memory/identity.py``): ``is_valid_profile_id``
-and the namespace helpers are unchanged. ``resolve_actor_id`` (the Q in Connect
-``GetSession`` -> ``GetContactAttributes`` chain) is dropped: in ACXD the Customer Profiles
-``profileId`` arrives in the request as ``{System.userId}`` (design §5, identity I2).
+In ACXD the Customer Profiles
+``profileId`` arrives in the request as ``{System.userId}`` (design §5).
 
 No profile, no memory. A missing or malformed ``profileId`` is never replaced by a
 synthetic key (phone number, contactId, hash): that would merge unrelated people or split
@@ -35,10 +33,7 @@ class SkipReason:
 
 
 def is_valid_profile_id(value: str | None) -> bool:
-    """True when the value looks like a Customer Profiles profileId (32 lowercase hex).
-
-    Ported unchanged from the AI Agents sample.
-    """
+    """True when the value looks like a Customer Profiles profileId (32 lowercase hex)."""
     if not value or len(value) != _PROFILE_ID_LEN:
         return False
     return all(c in "0123456789abcdef" for c in value.lower())
@@ -60,24 +55,16 @@ def log_id(value: str | None) -> str:
 
 
 def semantic_namespace(actor_id: str) -> str:
-    """Cross-conversation durable-fact namespace. Ported unchanged.
-
-    The ``connect/`` prefix is kept on purpose, so a customer served by both the AI Agents
-    and the ACXD variant shares one memory when both point at the same resource.
-    """
+    """Cross-conversation durable-fact namespace."""
     return f"connect/profile/{actor_id}/semantic"
 
 
 def recap_namespace(actor_id: str) -> str:
     """Conversation-recap namespace (custom strategy), flat so it is retrievable without a
-    prior session id. Ported unchanged."""
+    prior session id."""
     return f"connect/profile/{actor_id}/recap"
 
 
 def read_namespaces(actor_id: str) -> tuple[str, ...]:
-    """Namespaces the read path queries, one exact-match call each. Ported unchanged.
-
-    ``RetrieveMemoryRecords`` matches the namespace exactly; prefix forms returned zero
-    records in the AI Agents validation, so there is one call per namespace.
-    """
+    """Namespaces the read path queries, one exact-match call each."""
     return (semantic_namespace(actor_id), recap_namespace(actor_id))

@@ -16,7 +16,7 @@ Responses (the ACXD node continues on success, failure and timeout alike):
   flow; it is not a security control (a holder of the write secret can set any header).
 - ``503``: the enqueue failed (``EnqueueFailed``).
 
-Answers in tens of milliseconds, well inside the 5 s data request default timeout.
+Answers in tens of milliseconds.
 """
 
 from __future__ import annotations

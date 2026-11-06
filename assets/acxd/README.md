@@ -1,6 +1,6 @@
 # ACXD assets
 
-The agentic CX designer (ACXD) side of the sample, as code. Design: [`docs/design.md`](../../docs/design.md) sections 3 to 6.
+The Agentic CX Designer (ACXD) side of the sample, as code. Design: [`docs/design.md`](../../docs/design.md) sections 3 to 6.
 
 | Asset | Name | Purpose |
 |---|---|---|
@@ -34,15 +34,14 @@ acxdmemExit
 
 The wired Continuation on the calling Redirect node is the return address; the sub-flow's redirect to `{System.lastFlow:NLX.System}` lands there. To add memory to your own application, attach `acxdmemExit`, put a Redirect to it with its Continuation wired in front of every Exit application and Escalate node, and add the `acxdmemRead` node plus the state modification at the start of your entry flow.
 
-Rules the validator enforces (each from the design or the spike):
+Rules the validator enforces:
 
-- Neither memory node has an In progress path. With one, ACXD runs the request async and the conversation waits for another user turn, so at exit it never exits (spike S4).
+- Neither memory node has an In progress path.
 - Success, failure and timeout all continue, so a memory outage never strands the customer.
-- The read node keeps the 5 s default timeout, longer than the 4 s read Lambda timeout, so a slow Lambda still answers before ACXD takes the timeout path.
-- Send context is off on both requests. With it on, ACXD sends every context variable, including the memory text, as `nlx_context` (spike S2).
+- Send context is off on both requests.
 - Request models are closed (`additionalProperties: false`), so only `profileId` and `conversationId` are sent.
 - The `x-acxdmem-secret` header is a sensitive reference to an ACXD Secret, never a literal.
-- The exit sub-flow clears `acxdmemMemoryContext` on its return, and every Exit application and Escalate node clears it again, so the memory text is not handed back to Connect (spike S9).
+- The exit sub-flow clears `acxdmemMemoryContext` on its return, and every Exit application and Escalate node clears it again, so the memory text is not handed back to Connect.
 - The Connect snippet takes `nlx_userId` only from `$.Customer.ProfileId` and never copies `$.AgenticCX.ContextVariables` into the contact (threat model T9, T10).
 
 ## Commands
@@ -73,46 +72,3 @@ Provisioning options:
 The ACXD API key is read from Secrets Manager with your AWS credentials, never from an environment variable or argument. Provisioning needs a programmatic user that can create resources; the writer Lambda uses a separate `read-only` user (design.md section 3.2, T6). The script prints every resource it creates; record them for teardown.
 
 After provisioning, apply the Connect snippet: replace `__ACXD_WORKSPACE_ID__`, `__ACXD_APPLICATION_ID__` and `__ACXD_DEPLOYMENT_ALIAS__` (or call `renderConnectSnippet` in `src/connect.mjs`) and merge the actions into your inbound flow. The lookup key is the caller's phone number (`_phone` = `$.CustomerEndpoint.Address`), which Connect provides on voice. For chat, key the lookup on an identity the flow has authenticated; an unauthenticated chat must take the no-memory path (design.md section 5, T9). Do not copy `$.AgenticCX.ContextVariables.acxdmemMemoryContext` into contact attributes.
-
-## Model deviations
-
-Checked against the ACXD SDK service model and `amazon-connect-acxd-sdk` 0.2.0 (types and enums) on 2026-10-08.
-
-- **Exit application node type `terminate`.** The model's `FlowNodeType` enum has `end`, not `terminate`. The designer and the runtime use `terminate`: the spike logged `NodeTraversal type:"terminate"` and `ApplicationExit reason:"completed"` for it. `end` is not the Exit application node. The validator accepts `terminate` as the only addition to the enum and rejects `end`.
-- **Constraint traits restated.** The generated client carries enums and types but not `@pattern`, `@length` or `@range`. `src/validate.mjs` restates the ones that apply, each with the model shape it comes from.
-- **Payload operands.** `NodeDataRequest.payload` is a free-form `Document` in the model. The `{type: "recursive", value: {<field>: <operand>}}` form is the one the spike proved (S2).
-
-## Verified live
-
-Provisioned with `provision.mjs --apply --deploy` and driven by chat and voice contacts on
-2026-10-09 (summary in [`docs/e2e-verification.md`](../../docs/e2e-verification.md)):
-
-- The exit sub-flow pattern works on chat and voice: Redirect with wired Continuation, the
-  write, then `{System.lastFlow:NLX.System}` back to the caller's Exit application or
-  Escalate node. No inline fallback is needed.
-- `RedirectConfig {type: "flow", flowId}` with a static and with the dynamic
-  `{System.lastFlow:NLX.System}` target is accepted and runs; `GetFlow` returns it as written.
-- `terminate` is accepted by `CreateFlow` and logged at runtime as `ApplicationExit type
-  terminate reason completed`.
-- ACXD stores `additionalProperties: false` in the request model, and only the declared
-  fields arrive (the API Gateway model that rejects extra fields accepted every request).
-- State modifications on a Redirect node run; `acxdmemMemoryContext` is empty in
-  `$.AgenticCX.ContextVariables` on the Default, Escalation, Idle chat timeout and Error
-  branches.
-- Voice with `AMAZON_AGENTIC_VOICE`: read, write and recall work. ASR can mishear short
-  phrases ("an aisle seat" became "an aleseed").
-
-Exit coverage is as in design.md section 7: idle timeout, ACXD errors, customer close and
-hang-up hand back without running ACXD nodes, so those conversations are not written.
-
-Agentic CX block idle timeout: the Connect flow language key is `IdleChatTimeoutSeconds`, an
-**integer** (a string value is rejected). Unknown keys, such as `InputTimeLimitSeconds`, are
-accepted and silently ignored. Not in the public docs; observed 2026-10-09.
-
-The writer needs a separate `read-only` programmatic user. `scripts/create-reader-key.mjs`
-creates it, mints one key and stores it straight in Secrets Manager (`--delete` removes all
-three):
-
-```
-node scripts/create-reader-key.mjs --workspace-id <uuid> --api-key-secret-id <admin key secret> --apply
-```

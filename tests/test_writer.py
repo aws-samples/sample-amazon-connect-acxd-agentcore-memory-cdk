@@ -84,7 +84,7 @@ def test_writes_full_segment_and_advances_watermark(memory):
 
 
 def test_second_exit_writes_only_newer_messages(memory):
-    """S10: same conversationId exits twice; GetConversation returns the whole history."""
+    """Same conversationId exits twice; GetConversation returns the whole history."""
     mem, stub = memory
     first = SAMPLE_MESSAGES[:3]
     first_wm = 1791470872000  # 14:47:52Z

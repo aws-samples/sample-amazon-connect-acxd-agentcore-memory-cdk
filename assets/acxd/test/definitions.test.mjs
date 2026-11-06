@@ -79,7 +79,7 @@ test('exit sub-flow: write with IDs, all outcomes continue, return via System.la
     },
   });
   assert.equal(write.dataRequests?.[0].alwaysRetrigger, true);
-  assert.equal(write.metadata?.timeout, undefined, 'keeps the 5 s default');
+  assert.equal(write.metadata?.timeout, undefined, 'keeps the default timeout');
   assert.deepEqual(f.nodes[EXIT_NODES.back].metadata?.redirect, { type: 'flow', flowId: '{System.lastFlow:NLX.System}' });
   assert.deepEqual(f.nodes[EXIT_NODES.back].metadata?.stateModifications, [{ type: 'context', name: NAMES.contextVariable, modification: 'clear' }]);
   assert.equal(/** @type {any} */ (writeRequest(REAL).requestSchema).additionalProperties, false);
@@ -113,7 +113,7 @@ test('sample flow: read, store, agent, and both terminals through the exit sub-f
   assert.ok(!agentChildren.includes(N.exit) && !agentChildren.includes(N.escalate), 'agent never skips the write');
 });
 
-test('agent prompt carries the D2 rule and the memory token', () => {
+test('agent prompt carries the prompt rule and the memory token', () => {
   const p = sampleFlow().nodes[SAMPLE_NODES.agent].metadata?.generativeJourney?.prompt ?? '';
   assert.ok(p.includes(PROMPT_RULE));
   assert.ok(p.includes(TOKENS.memoryContext));

@@ -3,7 +3,7 @@
 // Resource names and placeholders for the ACXD-side assets.
 //
 // Every name starts with PREFIX so that provision/teardown can refuse to touch anything else
-// in the workspace. Name formats follow the ACXD SDK service model (checked 2026-10-08):
+// in the workspace. Name formats follow the ACXD SDK service model:
 //   ContextVariableName ^(?!acxd_context)[A-Za-z_]+$, 1-64   (model: contextVariables)
 //   DataRequestId       ^[A-Za-z0-9]+$, 3-100                (model: dataRequests)
 //   SecretName          ^[A-Za-z0-9_]+$, 3-100               (model: secrets)
@@ -43,7 +43,7 @@ export const PLACEHOLDERS = Object.freeze({
   deploymentAlias: '__ACXD_DEPLOYMENT_ALIAS__',
 });
 
-/** ACXD template tokens (design.md sections 3.2, 4, 5; verified in the spike S2, S6, S8). */
+/** ACXD template tokens (design.md sections 3.2, 4, 5). */
 export const TOKENS = Object.freeze({
   userId: '{System.userId:NLX.System}',
   conversationId: '{System.conversationId:NLX.System}',
@@ -52,7 +52,7 @@ export const TOKENS = Object.freeze({
   secret: (name) => `{${name}:NLX.Secret}`,
 });
 
-/** True when the id belongs to this sample. Case-insensitive like the spike guard. */
+/** True when the id belongs to this sample. Case-insensitive. */
 export function isOwned(id) {
   return String(id).toLowerCase().startsWith(PREFIX);
 }

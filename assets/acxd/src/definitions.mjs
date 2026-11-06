@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: MIT-0
 // Definitions of the ACXD-side assets, as ACXD SDK (amazon-connect-acxd-sdk 0.2.0) command inputs.
 //
-// Shapes follow the ACXD SDK service model (checked 2026-10-08) and the request forms the
-// live spike proved (design.md sections 3-4). Every value
+// Shapes follow the ACXD SDK service model (design.md sections 3-4). Every value
 // that differs per deployment is a parameter, so the same builders produce the exported JSON
 // (with placeholders) and the provisioning input (with real values).
 //
 // Design references: docs/design.md section 3 (write), 4 (read), 4.1 (clear on exit),
-// 4.2 (prompt rule), 5 (identity I2), 6 (endpoint auth).
+// 4.2 (prompt rule), 5 (identity), 6 (endpoint auth).
 
 import { NAMES, PLACEHOLDERS, ROUTES, SECRET_HEADER, TOKENS } from './names.mjs';
 
@@ -27,10 +26,9 @@ import { NAMES, PLACEHOLDERS, ROUTES, SECRET_HEADER, TOKENS } from './names.mjs'
 
 /**
  * The one deliberate deviation from the SDK model's FlowNodeType enum: the Exit application
- * node. The model lists `end`; the designer and runtime use `terminate` (spike S1/S9 logged
- * `NodeTraversal type:"terminate"` and `ApplicationExit reason:"completed"`), and the Amazon
+ * node. The model lists `end`; the designer and runtime use `terminate`, and the Amazon
  * Connect flow-agent node catalogue states that `end` is not the Exit application node and
- * does not end the conversation. See assets/acxd/README.md "Model deviations".
+ * does not end the conversation.
  * @typedef {Omit<SdkFlowNode, 'type'> & { type: SdkFlowNode['type'] | 'terminate' }} FlowNode
  * @typedef {Omit<SdkFlowInput, 'nodes'> & { nodes: Record<string, FlowNode> }} FlowInput
  */
@@ -38,7 +36,7 @@ import { NAMES, PLACEHOLDERS, ROUTES, SECRET_HEADER, TOKENS } from './names.mjs'
 export const EXIT_NODE_TYPE = 'terminate';
 
 /**
- * Agent prompt rule (design.md section 4.2, D2 control 1; also the T4 framing).
+ * Agent prompt rule (design.md section 4.2; also the T4 framing).
  * Shipped verbatim so builders paste the same text into their own agent nodes.
  */
 export const PROMPT_RULE =
@@ -70,7 +68,7 @@ const uuid = (group, n) => `acd0${group}000-0000-4000-8000-${String(n).padStart(
 const constant = (value) => ({ type: 'constant', value });
 
 /**
- * Data request payload: `{type: 'recursive', value: {<field>: <operand>}}` (spike S2). The SDK
+ * Data request payload: `{type: 'recursive', value: {<field>: <operand>}}`. The SDK
  * types the payload as a free-form Document, so the operand map is cast to it here.
  * @param {Record<string, Operand>} fields
  * @returns {import('@smithy/types').DocumentType}
@@ -80,7 +78,7 @@ const recursive = (fields) => /** @type {any} */ ({ type: 'recursive', value: fi
 /** @param {string} status @returns {ChildNode['conditions']} */
 const onStatus = (status) => [{ left: { type: 'node_status' }, operator: 'eq', right: constant(status) }];
 
-/** Generative Journey exit condition by index, numeric as in the spike flow. @param {number} index */
+/** Generative Journey exit condition by index, numeric. @param {number} index */
 const onJourneyExit = (index) =>
   /** @type {ChildNode['conditions']} */ ([
     { left: { type: 'system', name: 'System.gjConditionIndex' }, operator: 'eq', right: constant(index) },
@@ -120,7 +118,7 @@ export const READ_LAMBDA_TIMEOUT_MS = 4000;
 /**
  * Memory text returned by the read request (design.md section 4).
  * Allow frontend updates off (disallowExternalModification) so a client cannot inject memory;
- * Sensitive on so StateValuesEjected log events mask it (spike S9).
+ * Sensitive on.
  * @returns {ContextVariableInput[]}
  */
 export function contextVariables() {
@@ -180,7 +178,7 @@ function externalWebhook(cfg, route, secretName) {
       development: { url: dev, headers: secretHeader(secretName) },
     },
     // Send context off: with it on, ACXD adds every context variable as nlx_context,
-    // including the memory text (design.md section 6, spike S2).
+    // including the memory text (design.md section 6).
     sendContext: false,
   });
 }
@@ -249,10 +247,8 @@ export const EXIT_NODES = Object.freeze({ start: uuid('e', 1), write: uuid('e', 
  * Continuation path wired to their Exit application or Escalate node. The sub-flow runs the
  * write request and returns to the caller through {System.lastFlow:NLX.System}.
  *
- * - The write node has no In progress path: with one, ACXD runs the request async and then
- *   waits for another user turn, so the conversation never exits (spike S4).
+ * - The write node has no In progress path.
  * - Success, failure and timeout all continue, so a memory outage never strands the customer.
- * - The default 5 s data request timeout is kept; ingest answers in tens of ms (spike S4).
  * @returns {FlowInput}
  */
 export function exitFlow() {
@@ -282,7 +278,7 @@ export function exitFlow() {
             urlParams: {},
             headers: {},
             payload: recursive({ profileId: constant(TOKENS.userId), conversationId: constant(TOKENS.conversationId) }),
-            // A second exit of the same conversation (re-entry, spike S10) must write again.
+            // A second exit of the same conversation (re-entry) must write again.
             alwaysRetrigger: true,
           },
         ],
@@ -339,7 +335,7 @@ export const SAMPLE_AGENT_PROMPT =
 /**
  * Sample entry flow (design.md section 2): read memory at the start, an agent node that uses
  * it, and every terminal path through the exit sub-flow, which clears the memory context on
- * the terminal node so it is not handed back to Connect (design.md section 4.1, spike S9).
+ * the terminal node so it is not handed back to Connect (design.md section 4.1).
  * @returns {FlowInput}
  */
 export function sampleFlow() {
@@ -407,7 +403,7 @@ export function sampleFlow() {
               type: 'context',
               name: NAMES.contextVariable,
               modification: 'set',
-              // <dataRequestId>.<field>, proven in spike S8.
+              // <dataRequestId>.<field>.
               value: { type: 'variable', name: `${NAMES.readRequest}.memoryContext` },
             },
           ],
@@ -461,8 +457,8 @@ export function sampleFlow() {
       [N.escalate]: {
         nodeId: N.escalate,
         type: 'escalate',
-        // Continuation without a target, as in the spike: a later return to the Agentic CX
-        // block re-enters ACXD (spike S10).
+        // Continuation without a target: a later return to the Agentic CX
+        // block re-enters ACXD.
         childNodes: [{ conditions: onStatus('continuation') }],
         messages: [text(MSG.handoff, 'Let me connect you with an agent.')],
         metadata: { name: 'Escalate', stateModifications: [clearMemoryContext()] },
@@ -479,7 +475,7 @@ export function flows() {
 // --- application ---------------------------------------------------------------------------
 
 /**
- * Sample application. Default behaviours point at the sample flow, as in the spike app.
+ * Sample application. Default behaviours point at the sample flow.
  * Both flows are attached: a redirect target must be attached to the application.
  * @returns {ApplicationInput}
  */

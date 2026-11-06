@@ -7,15 +7,14 @@
 //     model, so an enum value the model does not know fails here.
 //  2. Constraint traits (@pattern, @length, @range, @required) are not carried by the
 //     generated client, so the ones that apply to the shapes we write are restated below with
-//     the model area they come from (checked 2026-10-08).
-// Design rules (docs/design.md) are checked after the model rules; they are what keeps a
-// future edit from silently re-introducing a spike finding (S2, S4, S9).
+//     the model area they come from.
+// Design rules (docs/design.md) are checked after the model rules.
 
 import * as sdk from 'amazon-connect-acxd-sdk';
 import { NAMES, PREFIX, SECRET_HEADER, TOKENS, isOwned } from './names.mjs';
 import { EXIT_NODE_TYPE, READ_LAMBDA_TIMEOUT_MS } from './definitions.mjs';
 
-/** ACXD default data request timeout when a node sets none (spike S4, observed). */
+/** Data request timeout the sample assumes when a node sets none. */
 const DEFAULT_DR_TIMEOUT_MS = 5000;
 
 const enumValues = (e) => new Set(Object.values(e));
@@ -247,7 +246,7 @@ function checkFlow(r, flow, ctx) {
       for (const s of REQUIRED_DR_PATHS) if (!statuses.has(s)) r.add(wn, `design: ${s} path not wired`);
       const calls = (/** @type {string} */ id) => (node.dataRequests ?? []).some((d) => d.dataRequestId === id);
       if (statuses.has('in_progress') && (calls(NAMES.writeRequest) || calls(NAMES.readRequest))) {
-        r.add(wn, 'design: memory data request nodes must not have an In progress path (spike S4)');
+        r.add(wn, 'design: memory data request nodes must not have an In progress path');
       }
       if (calls(NAMES.readRequest) && (meta.timeout ?? DEFAULT_DR_TIMEOUT_MS) <= READ_LAMBDA_TIMEOUT_MS) {
         r.add(wn, `design: read node timeout must exceed the ${READ_LAMBDA_TIMEOUT_MS} ms read Lambda timeout`);
@@ -276,7 +275,7 @@ function checkFlow(r, flow, ctx) {
       const clears = (meta.stateModifications ?? []).some(
         (m) => m.type === 'context' && m.name === NAMES.contextVariable && m.modification === 'clear',
       );
-      if (!clears) r.add(wn, `design: terminal node must clear ${NAMES.contextVariable} (spike S9)`);
+      if (!clears) r.add(wn, `design: terminal node must clear ${NAMES.contextVariable}`);
     }
 
     if (node.type === 'generative_journey') {

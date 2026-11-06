@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
-// Create or update the ACXD-side assets in an agentic CX designer workspace with the ACXD SDK.
+// Create or update the Agentic CX Designer (ACXD) assets in an ACXD workspace with the ACXD SDK.
 //
 // Dry run by default: validates the definitions with your values and prints the plan, with no
 // network calls. --apply makes the changes. --deploy (with --apply) also builds the sample

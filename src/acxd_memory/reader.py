@@ -2,19 +2,15 @@
 # SPDX-License-Identifier: MIT-0
 """Conversation-start memory read: profileId -> RetrieveMemoryRecords -> prompt context.
 
-Ported from the AI Agents sample (``connect-agentcore-memory-cdk``,
-``src/connect_memory/reader.py``). ``retrieve_memory_context`` and
-``format_memory_context`` keep the AI Agents behaviour (design §4, §8). Differences: the
-import path, this docstring, the default time budget, log lines that never carry the
+Log lines never carry the
 ``profileId`` or a namespace built from it (hashed id plus the namespace suffix only,
-threat T5), and record text in which ``<`` and ``>`` are neutralised so a stored record
+threat T5). In record text, ``<`` and ``>`` are neutralised so a stored record
 cannot close the prompt's ``<prior_context>`` block (threat T4). The ACXD read Lambda
 (``lambdas/read/lambda_function.py``) and the writer's optional restatement stripping
 (``acxd_memory.acxd_strip``, design §4.2) both call it.
 
 - One ``RetrieveMemoryRecords`` call per namespace from
-  ``acxd_memory.identity.read_namespaces``: retrieval is exact-match only, prefix forms
-  returned zero records in the AI Agents validation.
+  ``acxd_memory.identity.read_namespaces``: retrieval is exact-match only.
 - A shared client-side time budget and a graceful "no memory" fallback: a lookup failure
   (timeout, throttling, empty result, malformed profile id) never blocks the conversation.
 
@@ -33,8 +29,7 @@ from acxd_memory.identity import is_valid_profile_id, log_id, read_namespaces
 
 logger = logging.getLogger(__name__)
 
-# Small maxResults, short client-side budget. The AI Agents sample used 3.5 s; ACXD data
-# requests time out after 5 s by default (spike S4, S8), so the budget is 1.5 s (design §4). The read Lambda passes its own value from the environment.
+# Small maxResults, short client-side budget (design §4). The read Lambda passes its own value from the environment.
 DEFAULT_MAX_RESULTS_PER_NAMESPACE = 3
 DEFAULT_TIMEOUT_SECONDS = 1.5
 
@@ -111,9 +106,7 @@ def _extract_record_text(record: Mapping[str, Any]) -> str | None:
     """Pull the human-readable text out of one ``memoryRecordSummaries`` entry.
 
     ``RetrieveMemoryRecords`` wraps content as ``{"content": {"text": "..."}}`` for both the
-    SEMANTIC and CUSTOM (semanticOverride) strategy types used here (see
-    the AI Agents sample's validation records and its ``docs/latency-findings.md``
-    section 6's example facts) - not a union of shapes that needs per-type branching.
+    SEMANTIC and CUSTOM (semanticOverride) strategy types used here - not a union of shapes that needs per-type branching.
     """
     text = record.get("content", {}).get("text")
     return text if isinstance(text, str) and text.strip() else None
@@ -197,8 +190,7 @@ def retrieve_memory_context(
     profile_ref = log_id(profile_id)
 
     # One worker per namespace so all calls are in flight concurrently - this is what turns
-    # N sequential ~250ms calls (AI Agents sample, latency findings section 1) into one ~250-300ms
-    # wall-clock wait (same document, section 4). A
+    # N sequential calls into one wall-clock wait. A
     # single wait() against ALL_COMPLETED with the full budget as its timeout is sufficient
     # here: it returns as soon as every future finishes OR the timeout elapses, whichever is
     # first - there is no need to wake up early on the FIRST namespace finishing, since the
@@ -269,7 +261,7 @@ def retrieve_memory_context(
     )
 
 
-# Unchanged from the AI Agents sample: 2000 characters is plenty for a prompt-context block
+# 2000 characters is plenty for a prompt-context block
 # and keeps the agent's own prompt budget from being crowded out by memory context.
 MAX_CONTEXT_CHARS = 2000
 

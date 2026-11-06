@@ -116,7 +116,7 @@ def _warm() -> None:
     """Create the client and load the secret during Lambda init, not on the first request.
 
     The first request after a cold start is the customer's greeting (read route) or the exit
-    (write route), both inside the 5 s ACXD data request timeout. A failure here is ignored:
+    (write route). A failure here is ignored:
     the handler loads the secret again and denies if it still cannot.
     """
     try:

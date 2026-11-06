@@ -1,6 +1,6 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
-"""Writer-side stripping of restated memory from assistant turns (design §4.2, D2).
+"""Writer-side stripping of restated memory from assistant turns (design §4.2).
 
 Optional backstop behind the ``enableStripping`` context flag (default off). The primary
 feedback-loop controls are the agent prompt rule and the extraction-prompt override on the
@@ -14,12 +14,11 @@ Rules:
 - Any run of ``MIN_RUN_WORDS`` (8) or more consecutive words that also occurs in the match
   corpus is removed. The corpus is every retrieved record plus the
   ``format_memory_context`` string the agent was shown.
-- The raw token form ``<variable>:NLX.Context|`` seen in spike S9 is removed.
+- The raw token form ``<variable>:NLX.Context|`` is removed.
 - A turn with fewer than ``MIN_REMAINING_WORDS`` (4) words left is dropped.
 
-Limits [L]: verbatim and near-verbatim restatement only, not paraphrase; the re-retrieve
-can rank records differently from what the agent saw. The 8-word threshold is [U] until
-the build-phase live test.
+Limits: verbatim and near-verbatim restatement only, not paraphrase; the re-retrieve
+can rank records differently from what the agent saw.
 """
 
 from __future__ import annotations
@@ -35,7 +34,7 @@ MIN_REMAINING_WORDS = 4
 
 _WORD = re.compile(r"\S+")
 _PUNCT = re.compile(r"[^\w]+", re.UNICODE)
-# "{memoryContext:NLX.Context}" leaked as "memoryContext:NLX.Context|<value>" (spike S9).
+# "{memoryContext:NLX.Context}" leaked as "memoryContext:NLX.Context|<value>".
 _RAW_CONTEXT_TOKEN = re.compile(r"\{?[A-Za-z0-9_]+:NLX\.Context\}?\|?")
 
 

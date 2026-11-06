@@ -12,11 +12,9 @@ continue with ``memoryContext`` empty.
 
 Time budget: ``retrieve_memory_context`` runs both namespaces in parallel with a shared
 ``READ_BUDGET_SECONDS`` (1.5 s) budget; the botocore client uses short timeouts and one
-attempt. Lambda timeout is 4 s (design §4), under the 5 s ACXD data request
-default.
+attempt. Lambda timeout is 4 s (design §4).
 
-Replaces the AI Agents reader handler (Connect flow module + ``UpdateSessionData``); the
-retrieval and formatting code is reused unchanged from ``acxd_memory.reader``.
+The retrieval and formatting code is in ``acxd_memory.reader``.
 """
 
 from __future__ import annotations

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
-"""Read-only pre-deploy checks for the acxdmem stacks (pattern from the AI Agents sample).
+"""Read-only pre-deploy checks for the acxdmem stacks.
 
 Run before ``cdk deploy``. Each check prints PASS/FAIL with an actionable message; the
 script exits non-zero if any check fails. It only calls read/describe APIs and never reads

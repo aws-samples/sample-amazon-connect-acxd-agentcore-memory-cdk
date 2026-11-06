@@ -2,13 +2,8 @@
 # SPDX-License-Identifier: MIT-0
 """Write one stable ACXD conversation segment to AgentCore Memory (design §3.3, §3.4, §5).
 
-Ported from the AI Agents sample (``connect_memory/writer.py``): the ``MemoryWriter``
-shape (injected clients, ``WriteOutcome``, ``SkipReason`` constants, skip-before-dedup-
-before-write order, ``CreateEvent`` error handling) and the ``conversational`` payload
-mapping. Changed for ACXD:
-
 - Identity arrives in the request (``profileId``) and is cross-checked against
-  ``Conversation.userId`` instead of resolved through Q in Connect and contact attributes.
+  ``Conversation.userId``.
 - Dedup is per segment with a conversation watermark (``acxd_memory.dedup``), and
   ``lastWatermark`` is re-read right before ``CreateEvent`` (design §3.4).
 - ``eventTimestamp`` is the last message time of the segment, not ``now()``, so recap

@@ -2,11 +2,10 @@
 # SPDX-License-Identifier: MIT-0
 """Segment dedup on DynamoDB (design §3.4).
 
-Ported from the AI Agents sample (``connect_memory/dedup.py``): one table, conditional
+One table, conditional
 writes as the atomic check-and-set, 90-day TTL matching the memory event expiry, and
 ``ConditionalCheckFailedException`` detected by error code so this module needs no botocore
-import. Extended for ACXD because one ``conversationId`` can exit more than once (spike
-S10):
+import. Extended for ACXD because one ``conversationId`` can exit more than once:
 
 - **Conversation row** ``acxd#{conversationId}`` holds ``lastWatermark`` (epoch ms of the
   last message already written). It only moves forward:

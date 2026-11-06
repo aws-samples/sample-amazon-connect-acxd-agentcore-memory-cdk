@@ -4,7 +4,7 @@
 
 ``minimal_lambda_bundles`` creates stand-in ``dist/<name>`` directories (handler + shared
 modules, no vendored dependencies) so CDK synth tests run hermetically without
-``make bundle``. Pattern from the AI Agents sample. Existing bundles are left untouched.
+``make bundle``. Existing bundles are left untouched.
 """
 
 from __future__ import annotations

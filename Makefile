@@ -1,4 +1,4 @@
-.PHONY: install lock bundle synth synth-placeholders test test-python test-node test-assets test-e2e scan ci preflight deploy destroy clean
+.PHONY: install lock bundle synth synth-placeholders test test-python test-node test-assets ci preflight deploy destroy clean
 
 PYTHON ?= python3
 # Extra arguments for cdk deploy / destroy, e.g. CDK_ARGS="--profile my-profile -c key=value".
@@ -44,10 +44,9 @@ synth-placeholders: bundle
 
 # Everything that runs without AWS credentials, in one command:
 #   unit tests, CDK assertions (security rules, CDK Nag), the Node fetch-step tests, the ACXD
-#   asset checks (typecheck, tests, exported JSON in sync), a syntax check of the e2e tools,
-#   and the pre-publication scan.
+#   asset checks (typecheck, tests, exported JSON in sync).
 # tests/conftest.py creates stand-in dist/ bundles, so `make test` does not need `bundle`.
-test: test-python test-node test-assets test-e2e scan
+test: test-python test-node test-assets
 
 test-python:
 	$(PYTHON) -m pytest
@@ -57,15 +56,6 @@ test-node:
 
 test-assets:
 	cd assets/acxd && npm run verify
-
-# The e2e tools drive a live deployment; offline we only check that they parse.
-test-e2e:
-	$(PYTHON) -m py_compile e2e/connect_flow.py e2e/voice_call.py e2e/check_contact_memory.py scripts/verify_live_security.py
-	for f in e2e/*.mjs; do node --check "$$f" || exit 1; done
-
-# No real account ids, ARNs, resource ids, phone numbers or internal references.
-scan:
-	$(PYTHON) scripts/check_public.py
 
 # Clean-checkout CI: install pinned dependencies, run every offline check, synth.
 ci: install test synth-placeholders

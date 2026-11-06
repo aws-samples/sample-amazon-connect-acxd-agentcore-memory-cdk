@@ -5,8 +5,7 @@
 
 Configuration comes from ``cdk.json`` context (or ``-c key=value``), never from source. The
 validation here is offline (string shapes only, no AWS calls), so ``cdk synth`` stays
-credential-free; live checks are in ``scripts/preflight.py``. Pattern carried over from the
-AI Agents sample's ``app.py``: a missing key and an un-overridden ``REPLACE_WITH_...``
+credential-free; live checks are in ``scripts/preflight.py``. A missing key and an un-overridden ``REPLACE_WITH_...``
 placeholder both fail synth with the same message.
 
 Required context keys:

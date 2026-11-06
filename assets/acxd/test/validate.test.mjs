@@ -21,7 +21,7 @@ function rejects(mutate, expected) {
 
 test('baseline is valid', () => assert.deepEqual(validateAssets(fresh()), []));
 
-test('write node with an In progress path is rejected (spike S4)', () =>
+test('write node with an In progress path is rejected', () =>
   rejects((a) => {
     flow(a, NAMES.exitFlow).nodes[EXIT_NODES.write].childNodes.push({
       nodeId: EXIT_NODES.write,
@@ -50,7 +50,7 @@ test('unwired timeout path is rejected', () =>
     n.childNodes = n.childNodes.filter((/** @type {any} */ c) => c.conditions[0].right.value !== 'timeout');
   }, /timeout path not wired/));
 
-test('Send context on is rejected (spike S2)', () =>
+test('Send context on is rejected', () =>
   rejects((a) => {
     a.dataRequests[1].webhook.sendContext = true;
   }, /sendContext must be false/));
@@ -85,7 +85,7 @@ test('redirect into the exit sub-flow without a wired Continuation is rejected',
     flow(a, NAMES.sampleFlow).nodes[SAMPLE_NODES.toExit].childNodes = [];
   }, /must wire its Continuation/));
 
-test('terminal node that does not clear the memory context is rejected (spike S9)', () =>
+test('terminal node that does not clear the memory context is rejected', () =>
   rejects((a) => {
     flow(a, NAMES.sampleFlow).nodes[SAMPLE_NODES.escalate].metadata.stateModifications = [];
   }, /must clear acxdmemMemoryContext/));

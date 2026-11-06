@@ -64,7 +64,7 @@ def test_no_lambda_function_urls(stacks):
 
 
 def _is_tls_only_deny(stmt):
-    """The one allowed wildcard: CDK's enforce_ssl queue policy (CDK Nag SQS4, design §9).
+    """The one allowed wildcard: CDK's enforce_ssl queue policy (CDK Nag SQS4, design §8).
     It only ever denies, and only requests without TLS."""
     return (
         stmt.get("Effect") == "Deny"
@@ -252,7 +252,6 @@ def test_read_lambda_timeout_and_budget(stacks):
 @pytest.mark.parametrize("name", ["acxdmem-read", "acxdmem-ingest",
                                   "acxdmem-authorizer-read", "acxdmem-authorizer-write"])
 def test_customer_facing_functions_have_cold_start_headroom(stacks, name):
-    # Live test: 256 MB double cold starts took 3.8-4.4 s against the 5 s ACXD timeout.
     stacks["api_t"].has_resource_properties("AWS::Lambda::Function", {
         "FunctionName": name, "MemorySize": 1024,
     })
@@ -298,7 +297,7 @@ def test_dedup_table(stacks):
     })
 
 
-# --- IAM least privilege (§9) --------------------------------------------------------------
+# --- IAM least privilege (§8) --------------------------------------------------------------
 
 
 def _policy_actions(template, role_fragment):

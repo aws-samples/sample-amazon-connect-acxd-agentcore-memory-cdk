@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
-# Provision the AgentCore Memory resource and its execution role for the ACXD sample.
+# Provision the AgentCore Memory resource and its execution role for the Agentic CX Designer (ACXD) sample.
 #
-# Ported from the AI Agents sample (connect-agentcore-memory-cdk, scripts/provision_memory.sh):
-# role, trust policy, idempotency and ACTIVE wait are unchanged apart from names. The
-# strategies carry the D2 extraction-prompt override (see the memory resource section).
+# The strategies carry the extraction-prompt override (see the memory resource section).
 #
-# Deliberately OUTSIDE CDK's lifecycle (as in the AI Agents sample): the memory resource holds
+# Deliberately OUTSIDE CDK's lifecycle: the memory resource holds
 # customer data with its own 90-day event-expiry retention, and a failed CloudFormation
 # custom resource mid-rollback is a much worse failure mode for a resource like this than a
 # plain, idempotent shell script. `cdk destroy` never touches what this script creates -
@@ -109,9 +107,8 @@ echo "    inline policy applied"
 
 ROLE_ARN="arn:aws:iam::$ACCOUNT_ID:role/$ROLE_NAME"
 
-# --- memory resource: same three-strategy layout as the AI Agents sample (semantic facts,
-# custom recap at a flat namespace, built-in summary off the read path). Change for ACXD
-# (design §4.2, D2): the semantic strategy is a CUSTOM strategy with a semanticOverride so
+# --- memory resource: three strategies (semantic facts,
+# custom recap at a flat namespace, built-in summary off the read path). The semantic strategy is a CUSTOM strategy with a semanticOverride so
 # both read-path strategies carry the extraction-prompt rule below. That rule is the
 # primary backend control against the memory feedback loop (the agent restates injected
 # memory, which would otherwise be re-extracted as a new fact on the next write).
@@ -130,7 +127,7 @@ jq -n \
   --arg recap_prompt "$RECAP_PROMPT" \
   '{
     name: $name,
-    description: "Cross-conversation memory for Amazon Connect Customer agentic CX designer (ACXD) applications. actorId = Customer Profiles profileId, sessionId = ACXD conversationId.",
+    description: "Cross-conversation memory for Amazon Connect Customer ACXD applications. actorId = Customer Profiles profileId, sessionId = ACXD conversationId.",
     eventExpiryDuration: $expiry,
     memoryExecutionRoleArn: $role,
     memoryStrategies: [

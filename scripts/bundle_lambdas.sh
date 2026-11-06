@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
-# Build the Lambda deployment packages under dist/ (pattern from the AI Agents sample).
+# Build the Lambda deployment packages under dist/.
 #
 # Python Lambdas (authorizer, read, ingest, writer):
 #   dist/<name>/lambda_function.py   from lambdas/<name>/
