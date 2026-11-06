@@ -1,4 +1,4 @@
-# Cross-conversation memory for Amazon Connect agentic CX designer with Amazon Bedrock AgentCore Memory
+# Recall past conversations in Amazon Connect Customer with AgentCore Memory
 
 This AWS CDK (Python) sample gives applications built with the Amazon Connect Customer
 agentic CX designer (ACXD) a memory across conversations. When a returning customer starts
