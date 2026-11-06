@@ -1,0 +1,11 @@
+[
+  {
+    "name": "acxdmemMemoryContext",
+    "disallowExternalModification": true,
+    "schema": {
+      "type": "string",
+      "isSensitive": true,
+      "description": "acxdmem: memory text from earlier conversations, set by the acxdmemRead data request."
+    }
+  }
+]

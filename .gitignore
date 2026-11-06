@@ -1,0 +1,11 @@
+*.pyc
+*.zip
+.DS_Store
+.env
+.pytest_cache/
+.venv/
+__pycache__/
+build/
+cdk.out/
+dist/
+node_modules/

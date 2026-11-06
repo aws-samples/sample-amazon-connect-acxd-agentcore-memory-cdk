@@ -1,0 +1,29 @@
+{
+  "name": "acxdmem-acxd-assets",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ACXD-side assets for cross-conversation memory with Amazon Bedrock AgentCore Memory: context variable, data requests, exit sub-flow, sample application, Connect flow snippet.",
+  "license": "MIT-0",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "render": "node scripts/render.mjs",
+    "check:exported": "node scripts/render.mjs --check",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node --test test/*.test.mjs",
+    "verify": "npm run typecheck && npm test && npm run check:exported",
+    "provision": "node scripts/provision.mjs",
+    "export": "node scripts/export.mjs",
+    "teardown": "node scripts/teardown.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "3.1142.0",
+    "amazon-connect-acxd-sdk": "0.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.18.8",
+    "typescript": "5.9.3"
+  }
+}

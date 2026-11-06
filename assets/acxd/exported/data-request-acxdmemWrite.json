@@ -1,0 +1,65 @@
+{
+  "dataRequestId": "acxdmemWrite",
+  "type": "object",
+  "description": "acxdmem: queues the finished conversation for writing to AgentCore Memory.",
+  "sensitive": false,
+  "webhook": {
+    "implementation": "external",
+    "method": "POST",
+    "environments": {
+      "production": {
+        "url": "__ACXDMEM_API_BASE_URL__/memory/write",
+        "headers": [
+          {
+            "key": "x-acxdmem-secret",
+            "value": "{acxdmemWriteSecret:NLX.Secret}",
+            "sensitive": true,
+            "dynamic": false,
+            "required": true
+          }
+        ]
+      },
+      "development": {
+        "url": "__ACXDMEM_DEV_API_BASE_URL__/memory/write",
+        "headers": [
+          {
+            "key": "x-acxdmem-secret",
+            "value": "{acxdmemWriteSecret:NLX.Secret}",
+            "sensitive": true,
+            "dynamic": false,
+            "required": true
+          }
+        ]
+      }
+    },
+    "sendContext": false
+  },
+  "requestSchema": {
+    "type": "object",
+    "isSensitive": false,
+    "additionalProperties": false,
+    "properties": {
+      "profileId": {
+        "type": "string",
+        "description": "Amazon Connect Customer Profiles profileId ({System.userId}).",
+        "isSensitive": true
+      },
+      "conversationId": {
+        "type": "string",
+        "description": "ACXD conversation id ({System.conversationId}).",
+        "isSensitive": false
+      }
+    }
+  },
+  "responseSchema": {
+    "type": "object",
+    "isSensitive": false,
+    "properties": {
+      "accepted": {
+        "type": "boolean",
+        "isSensitive": false,
+        "description": "True when queued."
+      }
+    }
+  }
+}

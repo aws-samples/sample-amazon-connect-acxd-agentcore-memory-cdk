@@ -1,0 +1,33 @@
+{
+  "name": "acxdmem-sample",
+  "description": "acxdmem sample: cross-conversation memory with Amazon Bedrock AgentCore Memory.",
+  "flows": [
+    {
+      "flowId": "acxdmemSample"
+    },
+    {
+      "flowId": "acxdmemExit"
+    }
+  ],
+  "settings": {
+    "languageCode": "en-US",
+    "languageCodes": [
+      "en-US"
+    ],
+    "defaultFlows": {
+      "welcome": {
+        "flowId": "acxdmemSample"
+      },
+      "fallback": {
+        "flowId": "acxdmemSample"
+      },
+      "unknown": {
+        "flowId": "acxdmemSample"
+      },
+      "escalation": {
+        "flowId": "acxdmemSample"
+      }
+    },
+    "conversationTTL": 5
+  }
+}

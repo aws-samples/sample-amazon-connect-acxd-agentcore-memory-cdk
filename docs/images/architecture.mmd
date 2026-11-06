@@ -1,0 +1,41 @@
+flowchart TB
+    Customer(["Customer<br/>chat or voice"]) --> CFlow
+
+    subgraph Connect["Amazon Connect Customer flow"]
+        CFlow["Inbound flow<br/>Customer Profiles lookup<br/>on an authenticated identifier"] -->|"nlx_userId = profileId"| Block["Agentic CX block"]
+    end
+
+    subgraph ACXD["ACXD application"]
+        direction TB
+        Read["Start: data request<br/>acxdmemRead"] --> Conv["Conversation<br/>agent prompt uses<br/>{acxdmemMemoryContext}"]
+        Conv --> Exit["Exit sub-flow: data request<br/>acxdmemWrite (IDs only)"]
+        Exit --> Term["Exit application / Escalate<br/>clears memory variable"]
+    end
+
+    Block --> Read
+    Term -->|"hand back"| Block
+
+    subgraph AWS["AWS account (this CDK app)"]
+        direction TB
+        APIGW["API Gateway REST API<br/>one Lambda authorizer per route<br/>throttling, optional WAF"]
+        ReadFn["Lambda acxdmem-read<br/>1.5 s budget"]
+        Ingest["Lambda acxdmem-ingest<br/>validate, enqueue, 202"]
+        Queue[["SQS work queue<br/>DelaySeconds 120"]]
+        Writer["Lambda acxdmem-writer<br/>fetch, confirm, dedup, write"]
+        Fetch["Lambda acxdmem-fetch<br/>holds the ACXD API key"]
+        Dedup[("DynamoDB<br/>dedup table")]
+        DLQ[["SQS DLQ"]]
+        Memory[("Amazon Bedrock<br/>AgentCore Memory<br/>semantic + recap")]
+        APIGW -->|"POST /memory/read"| ReadFn
+        APIGW -->|"POST /memory/write"| Ingest
+        ReadFn -->|"RetrieveMemoryRecords"| Memory
+        Ingest --> Queue --> Writer
+        Writer -->|"IAM invoke"| Fetch
+        Writer --> Dedup
+        Writer -->|"CreateEvent"| Memory
+        Queue -.->|"after 3 receives"| DLQ
+    end
+
+    Read -->|"HTTPS + read secret"| APIGW
+    Exit -->|"HTTPS + write secret"| APIGW
+    Fetch -->|"GetConversation<br/>(ACXD SDK)"| ACXDAPI["ACXD API"]

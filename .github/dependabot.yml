@@ -1,0 +1,32 @@
+# Weekly version-update pull requests for every pinned dependency manifest. Security
+# updates are raised as soon as an advisory is published (repository setting).
+version: 2
+updates:
+  - package-ecosystem: pip
+    directories:
+      - "/"
+      - "/lambdas/authorizer"
+      - "/lambdas/ingest"
+      - "/lambdas/read"
+      - "/lambdas/writer"
+    schedule:
+      interval: weekly
+    # Wait a week before proposing a new release (malicious or broken publishes).
+    cooldown:
+      default-days: 7
+    groups:
+      aws-sdk:
+        patterns: ["boto3", "botocore"]
+  - package-ecosystem: npm
+    directories:
+      - "/lambdas/fetch"
+      - "/assets/acxd"
+      - "/e2e"
+    schedule:
+      interval: weekly
+    # Wait a week before proposing a new release (malicious or broken publishes).
+    cooldown:
+      default-days: 7
+    groups:
+      aws-sdk-js:
+        patterns: ["@aws-sdk/*"]

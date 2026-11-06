@@ -1,0 +1,16 @@
+{
+  "name": "acxdmem-e2e",
+  "version": "1.0.0",
+  "description": "acxdmem live verification drivers",
+  "scripts": {},
+  "license": "MIT-0",
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-connect": "3.1147.0",
+    "@aws-sdk/client-connectparticipant": "3.1147.0",
+    "@aws-sdk/client-secrets-manager": "3.1142.0",
+    "@aws-sdk/credential-providers": "3.1147.0",
+    "amazon-connect-acxd-sdk": "0.2.0"
+  },
+  "private": true
+}

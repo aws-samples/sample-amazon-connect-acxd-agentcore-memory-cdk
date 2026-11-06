@@ -1,0 +1,94 @@
+{
+  "Version": "2019-10-30",
+  "StartAction": "acxdmem-get-profile",
+  "Actions": [
+    {
+      "Identifier": "acxdmem-get-profile",
+      "Type": "GetCustomerProfile",
+      "Parameters": {
+        "ProfileRequestData": {
+          "IdentifierName": "_phone",
+          "IdentifierValue": "$.CustomerEndpoint.Address"
+        },
+        "ProfileResponseData": []
+      },
+      "Transitions": {
+        "NextAction": "acxdmem-agentic-cx-with-memory",
+        "Errors": [
+          { "NextAction": "acxdmem-agentic-cx-no-memory", "ErrorType": "NoneFoundError" },
+          { "NextAction": "acxdmem-agentic-cx-no-memory", "ErrorType": "MultipleFoundError" },
+          { "NextAction": "acxdmem-agentic-cx-no-memory", "ErrorType": "NoMatchingError" }
+        ]
+      }
+    },
+    {
+      "Identifier": "acxdmem-agentic-cx-with-memory",
+      "Type": "ConnectParticipantWithAgenticCX",
+      "Parameters": {
+        "AgentConfiguration": {
+          "WorkspaceId": "__ACXD_WORKSPACE_ID__",
+          "ApplicationId": "__ACXD_APPLICATION_ID__",
+          "Alias": "__ACXD_DEPLOYMENT_ALIAS__",
+          "ContextVariables": {
+            "nlx_userId": "$.Customer.ProfileId"
+          }
+        },
+        "SpeechRecognitionConfiguration": { "SpeechRecognitionEngine": "AMAZON_AGENTIC_VOICE" },
+        "AudioFillerConfiguration": { "Enabled": false }
+      },
+      "Transitions": {
+        "NextAction": "acxdmem-default",
+        "Conditions": [
+          { "NextAction": "acxdmem-escalation", "Condition": { "Operator": "Equals", "Operands": ["Escalation"] } }
+        ],
+        "Errors": [
+          { "NextAction": "acxdmem-error", "ErrorType": "NoMatchingError" },
+          { "NextAction": "acxdmem-default", "ErrorType": "NoMatchingCondition" },
+          { "NextAction": "acxdmem-default", "ErrorType": "InputTimeLimitExceeded" }
+        ]
+      }
+    },
+    {
+      "Identifier": "acxdmem-agentic-cx-no-memory",
+      "Type": "ConnectParticipantWithAgenticCX",
+      "Parameters": {
+        "AgentConfiguration": {
+          "WorkspaceId": "__ACXD_WORKSPACE_ID__",
+          "ApplicationId": "__ACXD_APPLICATION_ID__",
+          "Alias": "__ACXD_DEPLOYMENT_ALIAS__"
+        },
+        "SpeechRecognitionConfiguration": { "SpeechRecognitionEngine": "AMAZON_AGENTIC_VOICE" },
+        "AudioFillerConfiguration": { "Enabled": false }
+      },
+      "Transitions": {
+        "NextAction": "acxdmem-default",
+        "Conditions": [
+          { "NextAction": "acxdmem-escalation", "Condition": { "Operator": "Equals", "Operands": ["Escalation"] } }
+        ],
+        "Errors": [
+          { "NextAction": "acxdmem-error", "ErrorType": "NoMatchingError" },
+          { "NextAction": "acxdmem-default", "ErrorType": "NoMatchingCondition" },
+          { "NextAction": "acxdmem-default", "ErrorType": "InputTimeLimitExceeded" }
+        ]
+      }
+    },
+    {
+      "Identifier": "acxdmem-default",
+      "Type": "DisconnectParticipant",
+      "Parameters": {},
+      "Transitions": {}
+    },
+    {
+      "Identifier": "acxdmem-escalation",
+      "Type": "DisconnectParticipant",
+      "Parameters": {},
+      "Transitions": {}
+    },
+    {
+      "Identifier": "acxdmem-error",
+      "Type": "DisconnectParticipant",
+      "Parameters": {},
+      "Transitions": {}
+    }
+  ]
+}

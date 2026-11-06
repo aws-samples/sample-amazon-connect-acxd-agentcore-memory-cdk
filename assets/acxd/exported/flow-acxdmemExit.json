@@ -1,0 +1,123 @@
+{
+  "flowId": "acxdmemExit",
+  "description": "acxdmem: writes the conversation to AgentCore Memory, then returns to the caller.",
+  "untrained": true,
+  "mainLanguageCode": "en-US",
+  "languageCodes": [
+    "en-US"
+  ],
+  "nodes": {
+    "acd0e000-0000-4000-8000-000000000001": {
+      "nodeId": "acd0e000-0000-4000-8000-000000000001",
+      "type": "start",
+      "childNodes": [
+        {
+          "nodeId": "acd0e000-0000-4000-8000-000000000002",
+          "conditions": []
+        }
+      ],
+      "messages": [],
+      "metadata": {
+        "stateModifications": []
+      }
+    },
+    "acd0e000-0000-4000-8000-000000000002": {
+      "nodeId": "acd0e000-0000-4000-8000-000000000002",
+      "type": "data_request",
+      "childNodes": [
+        {
+          "nodeId": "acd0e000-0000-4000-8000-000000000003",
+          "conditions": [
+            {
+              "left": {
+                "type": "node_status"
+              },
+              "operator": "eq",
+              "right": {
+                "type": "constant",
+                "value": "success"
+              }
+            }
+          ]
+        },
+        {
+          "nodeId": "acd0e000-0000-4000-8000-000000000003",
+          "conditions": [
+            {
+              "left": {
+                "type": "node_status"
+              },
+              "operator": "eq",
+              "right": {
+                "type": "constant",
+                "value": "failure"
+              }
+            }
+          ]
+        },
+        {
+          "nodeId": "acd0e000-0000-4000-8000-000000000003",
+          "conditions": [
+            {
+              "left": {
+                "type": "node_status"
+              },
+              "operator": "eq",
+              "right": {
+                "type": "constant",
+                "value": "timeout"
+              }
+            }
+          ]
+        }
+      ],
+      "dataRequests": [
+        {
+          "dataRequestId": "acxdmemWrite",
+          "name": "acxdmemWrite",
+          "urlParams": {},
+          "headers": {},
+          "payload": {
+            "type": "recursive",
+            "value": {
+              "profileId": {
+                "type": "constant",
+                "value": "{System.userId:NLX.System}"
+              },
+              "conversationId": {
+                "type": "constant",
+                "value": "{System.conversationId:NLX.System}"
+              }
+            }
+          },
+          "alwaysRetrigger": true
+        }
+      ],
+      "messages": [],
+      "metadata": {
+        "name": "Write memory",
+        "stateModifications": []
+      }
+    },
+    "acd0e000-0000-4000-8000-000000000003": {
+      "nodeId": "acd0e000-0000-4000-8000-000000000003",
+      "type": "redirect",
+      "childNodes": [],
+      "messages": [],
+      "metadata": {
+        "name": "Return to caller",
+        "redirect": {
+          "type": "flow",
+          "flowId": "{System.lastFlow:NLX.System}"
+        },
+        "stateModifications": [
+          {
+            "type": "context",
+            "name": "acxdmemMemoryContext",
+            "modification": "clear"
+          }
+        ]
+      }
+    }
+  }
+}

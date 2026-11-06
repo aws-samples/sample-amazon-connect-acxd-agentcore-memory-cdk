@@ -1,0 +1,65 @@
+{
+  "dataRequestId": "acxdmemRead",
+  "type": "object",
+  "description": "acxdmem: returns AgentCore Memory context for the customer at conversation start.",
+  "sensitive": false,
+  "webhook": {
+    "implementation": "external",
+    "method": "POST",
+    "environments": {
+      "production": {
+        "url": "__ACXDMEM_API_BASE_URL__/memory/read",
+        "headers": [
+          {
+            "key": "x-acxdmem-secret",
+            "value": "{acxdmemReadSecret:NLX.Secret}",
+            "sensitive": true,
+            "dynamic": false,
+            "required": true
+          }
+        ]
+      },
+      "development": {
+        "url": "__ACXDMEM_DEV_API_BASE_URL__/memory/read",
+        "headers": [
+          {
+            "key": "x-acxdmem-secret",
+            "value": "{acxdmemReadSecret:NLX.Secret}",
+            "sensitive": true,
+            "dynamic": false,
+            "required": true
+          }
+        ]
+      }
+    },
+    "sendContext": false
+  },
+  "requestSchema": {
+    "type": "object",
+    "isSensitive": false,
+    "additionalProperties": false,
+    "properties": {
+      "profileId": {
+        "type": "string",
+        "description": "Amazon Connect Customer Profiles profileId ({System.userId}).",
+        "isSensitive": true
+      }
+    }
+  },
+  "responseSchema": {
+    "type": "object",
+    "isSensitive": false,
+    "properties": {
+      "memoryContext": {
+        "type": "string",
+        "description": "Memory text from earlier conversations, empty when none.",
+        "isSensitive": true
+      },
+      "hasMemory": {
+        "type": "boolean",
+        "isSensitive": false,
+        "description": "True when memoryContext is not empty."
+      }
+    }
+  }
+}
