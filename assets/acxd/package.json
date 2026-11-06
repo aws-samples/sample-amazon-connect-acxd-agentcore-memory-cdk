@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "3.1142.0",
-    "amazon-connect-acxd-sdk": "0.2.0"
+    "amazon-connect-acxd-sdk": "0.3.0"
   },
   "devDependencies": {
     "@types/node": "22.18.8",
