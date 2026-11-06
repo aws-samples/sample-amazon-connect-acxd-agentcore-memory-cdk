@@ -23,7 +23,7 @@
     "amazon-connect-acxd-sdk": "0.2.0"
   },
   "devDependencies": {
-    "@types/node": "22.18.8",
+    "@types/node": "26.6.6",
     "typescript": "5.9.3"
   }
 }
