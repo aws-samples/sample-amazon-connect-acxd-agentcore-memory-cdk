@@ -12,7 +12,7 @@
     "test": "node --test"
   },
   "dependencies": {
-    "@aws-sdk/client-secrets-manager": "3.1160.0",
+    "@aws-sdk/client-secrets-manager": "3.1161.0",
     "amazon-connect-acxd-sdk": "0.3.0"
   }
 }
