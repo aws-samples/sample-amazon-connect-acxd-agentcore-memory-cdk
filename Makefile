@@ -3,7 +3,7 @@
 PYTHON ?= python3
 # Extra arguments for cdk deploy / destroy, e.g. CDK_ARGS="--profile my-profile -c key=value".
 CDK_ARGS ?=
-# AWS CDK CLI. Tested with 2.1138.0; e.g. CDK="npx --yes aws-cdk@2.1138.0" to pin it.
+# AWS CDK CLI. Tested with 2.1148.0; e.g. CDK="npx --yes aws-cdk@2.1148.0" to pin it.
 CDK ?= cdk
 PIP_TOOLS_VERSION = 7.6.2
 LOCKED = requirements.txt requirements-dev.txt \

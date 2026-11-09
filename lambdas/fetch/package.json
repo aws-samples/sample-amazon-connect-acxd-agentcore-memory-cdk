@@ -2,7 +2,7 @@
   "name": "acxdmem-fetch",
   "version": "1.0.0",
   "private": true,
-  "description": "acxdmem transcript fetch step: ACXD SDK GetConversation (Option B)",
+  "description": "Transcript fetch step: reads one Agentic CX Designer conversation with the ACXD SDK GetConversation call",
   "type": "module",
   "main": "index.mjs",
   "engines": {
@@ -12,7 +12,7 @@
     "test": "node --test"
   },
   "dependencies": {
-    "@aws-sdk/client-secrets-manager": "3.1148.0",
-    "amazon-connect-acxd-sdk": "0.2.0"
+    "@aws-sdk/client-secrets-manager": "3.1160.0",
+    "amazon-connect-acxd-sdk": "0.3.0"
   }
 }

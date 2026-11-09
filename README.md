@@ -69,7 +69,7 @@ The full design is in
 - Model access in Amazon Bedrock for the extraction model used by
   `scripts/provision_memory.sh` (default: the regional Claude Haiku 4.5 inference profile).
 - Locally: Python 3.12 or later, Node.js 20 or later, AWS CDK CLI v2 (tested with
-  2.1138.0), AWS CLI v2, `jq`.
+  2.1148.0), AWS CLI v2, `jq`.
 
 ## Quick start
 

@@ -30,8 +30,8 @@ To change a Python dependency, edit the matching `requirements*.in` file and run
 
 `scripts/preflight.py` (step 4) checks both of these; skip what it reports as present.
 
-- **AWS CDK.** Install the CDK CLI (tested with 2.1138.0:
-  `npm install -g aws-cdk@2.1138.0`, or pass `CDK="npx --yes aws-cdk@2.1138.0"` to every
+- **AWS CDK.** Install the CDK CLI (tested with 2.1148.0:
+  `npm install -g aws-cdk@2.1148.0`, or pass `CDK="npx --yes aws-cdk@2.1148.0"` to every
   `make` target that runs `cdk`) and bootstrap the environment:
   ```bash
   cdk bootstrap aws://<account-id>/$AWS_REGION
